@@ -153,6 +153,13 @@ public class Main extends JavaPlugin implements Listener {
                 if (p == p1){
                     if (p.getInventory().contains(Material.DIAMOND) && p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND)) { //p1 betting
                         if (betting1 >= betting2) {
+                            if (diamond == 1){
+                                p1call = true;
+                                p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
+                                betting1++;
+                                p1.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "ALL IN!!!!", 10, 20, 10);
+                                p2.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "ALL IN!!!!", 10, 20, 10);
+                            }
                             p1call = false;
                             p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
                             betting1++;
@@ -171,6 +178,13 @@ public class Main extends JavaPlugin implements Listener {
                 }else if (p == p2){
                     if (p.getInventory().contains(Material.DIAMOND) && p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND)) {//p2 bettting
                         if (betting1 <= betting2) {
+                            if (diamond == 1){
+                                p2call = true;
+                                p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
+                                betting2++;
+                                p1.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "ALL IN!!!!", 10, 20, 10);
+                                p2.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "ALL IN!!!!", 10, 20, 10);
+                            }
                             p2call = false;
                             betting2++;
                             p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
