@@ -6,3 +6,5 @@ description: 인디언 기우제
 commands:
   poker:
     description: 빌어라
+  pokerdebug:
+    description: 디바그

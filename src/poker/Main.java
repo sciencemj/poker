@@ -1,7 +1,9 @@
 package poker;
 import org.bukkit.*;
+import org.bukkit.boss.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -12,6 +14,9 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 public class Main extends JavaPlugin implements Listener {
@@ -20,12 +25,14 @@ public class Main extends JavaPlugin implements Listener {
     public boolean isGaming,p1giveup,p2giveup,p1call,p2call = false;
     public Player p1;
     public Player p2;
+    public ArrayList<BossBar> bars = new ArrayList<BossBar>();
     public int betting1 = 0;
     public int betting2 = 0;
     public int card1, card2 = 0;
     @Override
     public void onEnable() {
         this.getCommand("poker").setExecutor(this);
+        this.getCommand("pokerdebug").setExecutor(this);
         PluginDescriptionFile file = this.getDescription();
         System.out.println(file.getName() + "version:" + file.getVersion() + " loaded");
         this.getServer().getPluginManager().registerEvents(this,this);
@@ -34,7 +41,18 @@ public class Main extends JavaPlugin implements Listener {
         p.getInventory().addItem(new ItemStack(Material.DIAMOND, betting));
     }
 
+    public void Boss(String title, BarColor color, BarStyle style, Player p, BarFlag... barFlags) {
+        BossBar bar = getServer().createBossBar(title, color, style, barFlags);
+        bar.setProgress(1);
+        bar.addPlayer(p);
+        bar.setVisible(true);
+        bars.add(bar);
+    }
+
     public void reset(){
+        for (BossBar bar : bars){
+            bar.removeAll();
+        }
         isGaming = false;
         p2call = false;
         p1call = false;
@@ -68,6 +86,8 @@ public class Main extends JavaPlugin implements Listener {
                         count--;
                     }else if (count == 0){
                         isGaming = true;
+                        Boss(ChatColor.RED + "상대패:" + card2, BarColor.YELLOW, BarStyle.SEGMENTED_6,p1,BarFlag.PLAY_BOSS_MUSIC);
+                        Boss(ChatColor.RED + "상대패:" + card1, BarColor.YELLOW, BarStyle.SEGMENTED_6,p2,BarFlag.PLAY_BOSS_MUSIC);
                         p1.sendMessage(ChatColor.RED + "상대패:" + card2);
                         p2.sendMessage(ChatColor.RED + "상대패:" + card1);
                         count--;
@@ -110,6 +130,11 @@ public class Main extends JavaPlugin implements Listener {
                 }
             },0L,20L);
 
+        }else if (cmd.getName().equals("pokerdebug")){
+            if (sender instanceof Player){
+                ((Player) sender).getInventory().removeItem(new ItemStack(Material.DIAMOND, Integer.parseInt(strings[0])));
+                sender.sendMessage(strings[0]);
+            }
         }
         return false;
     }
@@ -120,23 +145,25 @@ public class Main extends JavaPlugin implements Listener {
         if (e.getAction().equals(Action.RIGHT_CLICK_BLOCK) || e.getAction().equals(Action.RIGHT_CLICK_AIR)){
             if (isGaming == true){
                 int diamond = 0;
-                for (ItemStack is : p.getInventory().getContents()) {
-                    if (is.getType() == Material.DIAMOND) {
-                        diamond = diamond + is.getAmount();
+                for (ItemStack item : p.getInventory().getContents()) {
+                    if ((item != null) && (item.getType() == Material.DIAMOND) && (item.getAmount() > 0)) {
+                        diamond = diamond + item.getAmount();
                     }
                 }
                 if (p == p1){
                     if (p.getInventory().contains(Material.DIAMOND) && p.getInventory().getItemInMainHand().getType().equals(Material.DIAMOND)) { //p1 betting
                         if (betting1 >= betting2) {
                             p1call = false;
-                            betting1++;
                             p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
+                            betting1++;
                             p1.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
                             p2.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
                         }else if (diamond > (betting2 - betting1 + 1)){
                             p1call = false;
+
+                            p.getInventory().removeItem(new ItemStack(Material.DIAMOND, ((betting2 - betting1) + 1)));
                             betting1 = betting2 + 1;
-                            p.getInventory().removeItem(new ItemStack(Material.DIAMOND, (betting2 - betting1) + 1));
+                            //p.getInventory().removeItem(new ItemStack(Material.DIAMOND, (betting2 - betting1) + 1));
                             p1.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
                             p2.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
                         }
@@ -151,8 +178,8 @@ public class Main extends JavaPlugin implements Listener {
                             p2.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "UP!", 10, 20, 10);
                         }else if (diamond > (betting1 - betting2 + 1)){
                             p1call = false;
+                            p.getInventory().removeItem(new ItemStack(Material.DIAMOND, ((betting1 - betting2) + 1)));
                             betting2 = betting1 + 1;
-                            p.getInventory().removeItem(new ItemStack(Material.DIAMOND, (betting1 - betting2) + 1));
                             p1.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "UP!", 10, 20, 10);
                             p2.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "UP!", 10, 20, 10);
                         }
@@ -162,13 +189,12 @@ public class Main extends JavaPlugin implements Listener {
         }else if (e.getAction().equals(Action.LEFT_CLICK_AIR) || e.getAction().equals(Action.LEFT_CLICK_BLOCK)){//give up -----------------------------------------------------------------
             if (isGaming == true) {
                 int diamond = 0;
-                for (ItemStack is : p.getInventory().getContents()) {
-                    if (is.getType() == Material.DIAMOND) {
-                        diamond = diamond + is.getAmount();
+                for (ItemStack item : p.getInventory().getContents()) {
+                    if ((item != null) && (item.getType() == Material.DIAMOND) && (item.getAmount() > 0)) {
+                        diamond = diamond + item.getAmount();
                     }
                 }
                 if (p.getInventory().getItemInMainHand().getType().equals(Material.STICK)) {
-
                     if (p == p1) {
                         p1giveup = true;
                     } else if (p== p2) {
@@ -180,8 +206,8 @@ public class Main extends JavaPlugin implements Listener {
                     if (p == p1) {
                         if (betting1 < betting2) {
                             if (diamond > (betting2 - betting1)) {
-                                betting1 = betting2;
                                 p.getInventory().removeItem(new ItemStack(Material.DIAMOND, betting2 - betting1));
+                                betting1 = betting2;
                                 p1.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "called", 10, 20, 10);
                                 p2.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "called", 10, 20, 10);
                                 p1call = true;
@@ -203,8 +229,8 @@ public class Main extends JavaPlugin implements Listener {
                     } else if (p == p2) {
                         if (betting1 > betting2) {
                             if (diamond > (betting1 - betting2)) {
-                                betting2 = betting1;
                                 p.getInventory().removeItem(new ItemStack(Material.DIAMOND, betting1 - betting2));
+                                betting2 = betting1;
                                 p1.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "called", 10, 20, 10);
                                 p2.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "called", 10, 20, 10);
                                 p2call = true;
