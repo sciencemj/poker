@@ -159,12 +159,13 @@ public class Main extends JavaPlugin implements Listener {
                                 betting1++;
                                 p1.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "ALL IN!!!!", 10, 20, 10);
                                 p2.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "ALL IN!!!!", 10, 20, 10);
+                            }else {
+                                p1call = false;
+                                p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
+                                betting1++;
+                                p1.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
+                                p2.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
                             }
-                            p1call = false;
-                            p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
-                            betting1++;
-                            p1.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
-                            p2.sendTitle(ChatColor.GREEN + p.getName() + ":" + betting1, "UP!", 10, 20, 10);
                         }else if (diamond > (betting2 - betting1 + 1)){
                             p1call = false;
 
@@ -184,12 +185,13 @@ public class Main extends JavaPlugin implements Listener {
                                 betting2++;
                                 p1.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "ALL IN!!!!", 10, 20, 10);
                                 p2.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "ALL IN!!!!", 10, 20, 10);
+                            }else {
+                                p2call = false;
+                                betting2++;
+                                p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
+                                p1.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "UP!", 10, 20, 10);
+                                p2.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "UP!", 10, 20, 10);
                             }
-                            p2call = false;
-                            betting2++;
-                            p.getInventory().removeItem(new ItemStack(Material.DIAMOND, 1));
-                            p1.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "UP!", 10, 20, 10);
-                            p2.sendTitle(ChatColor.RED + p.getName() + ":" + betting2, "UP!", 10, 20, 10);
                         }else if (diamond > (betting1 - betting2 + 1)){
                             p1call = false;
                             p.getInventory().removeItem(new ItemStack(Material.DIAMOND, ((betting1 - betting2) + 1)));
