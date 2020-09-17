@@ -1,0 +1,8 @@
+name: indian-poker
+version: 1.0.0
+main: poker.Main
+description: 인디언 기우제
+
+commands:
+  poker:
+    description: 빌어라
